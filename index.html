@@ -1,0 +1,1050 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0"/>
+<title>Delibreads · Panel CEO</title>
+<link rel="manifest" href="/manifest.json"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="default"/>
+<meta name="apple-mobile-web-app-title" content="Delibreads"/>
+<meta name="theme-color" content="#b05455"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.2/babel.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+// ─── CONFIGURACIÓN SUPABASE ───────────────────────────────────────────────
+// Paso 1: Ve a https://supabase.com y crea una cuenta gratuita
+// Paso 2: Crea un nuevo proyecto
+// Paso 3: Ve a Project Settings > API y copia los dos valores de abajo
+const SUPABASE_URL  = "PEGA_AQUI_TU_PROJECT_URL";   // ej: https://xxxxx.supabase.co
+const SUPABASE_KEY  = "PEGA_AQUI_TU_ANON_KEY";      // clave anon/public
+// ─────────────────────────────────────────────────────────────────────────
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+</script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;-webkit-text-size-adjust:100%}
+body{background:#f7f6f4;font-family:Georgia,'Times New Roman',serif;color:#2c2c2c}
+input,textarea,select,button{-webkit-appearance:none;appearance:none;font-family:inherit}
+input[type="date"]{-webkit-appearance:none}
+input[type="date"]::-webkit-calendar-picker-indicator{opacity:.5;cursor:pointer}
+textarea::placeholder,input::placeholder{color:#ccc!important;font-family:system-ui,sans-serif}
+button{cursor:pointer;-webkit-tap-highlight-color:transparent}
+button:active{opacity:.75}
+@keyframes fs{from{opacity:0;transform:translateY(-10px)}to{opacity:1;transform:translateY(0)}}
+@keyframes slideUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+::-webkit-scrollbar{width:4px}
+::-webkit-scrollbar-thumb{background:#becec5;border-radius:2px}
+
+/* NAV MÓVIL FIJA ABAJO */
+.mob-nav{display:none;position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:2px solid #b05455;z-index:200;padding:6px 0 max(6px,env(safe-area-inset-bottom));box-shadow:0 -2px 12px rgba(176,84,85,0.1)}
+.mob-nav button{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;background:none;border:none;padding:6px 2px;font-size:10px;font-family:system-ui,sans-serif;font-weight:600;color:#b8b8b8;letter-spacing:0.04em;position:relative}
+.mob-nav button.active{color:#b05455}
+.mob-nav button .nav-icon{font-size:20px;line-height:1}
+.mob-nav button .nav-badge{position:absolute;top:2px;right:calc(50% - 18px);background:#b05455;color:#fff;border-radius:50%;width:16px;height:16px;font-size:9px;display:flex;align-items:center;justify-content:center;font-weight:bold}
+
+/* TABS ESCRITORIO */
+.desk-tabs{display:flex;border-bottom:2px solid rgba(190,206,197,0.7);margin-bottom:24px;overflow-x:auto}
+.desk-tabs::-webkit-scrollbar{height:0}
+
+@media(max-width:700px){
+  .mob-nav{display:flex}
+  .desk-tabs{display:none}
+  .main-pad{padding:16px 14px 80px!important}
+  .header-subtitle{display:none}
+  .header-inner{padding:0 14px!important;height:52px!important}
+  .header-brand{font-size:18px!important}
+  .header-tagline{display:none}
+  .header-sep{display:none}
+  .header-name{font-size:13px!important}
+  .header-role{display:none}
+  .scope-btn{padding:6px 14px!important;font-size:12px!important}
+  .grid-2{grid-template-columns:1fr!important}
+  .grid-3{grid-template-columns:1fr!important}
+  .week-grid{grid-template-columns:repeat(7,1fr);gap:4px!important}
+  .week-cell{padding:6px 4px!important;min-height:64px!important}
+  .week-cell-day{font-size:9px!important}
+  .week-cell-num{font-size:16px!important;margin-bottom:3px!important}
+  .week-task-chip{display:none}
+  .daily-stats{gap:14px!important}
+  .daily-stat-val{font-size:20px!important}
+  .form-actions{flex-direction:column!important;gap:10px!important;align-items:stretch!important}
+  .form-actions>div{flex-direction:column!important;gap:8px!important}
+  .form-actions button{width:100%!important;justify-content:center}
+  .pri-picker{flex-wrap:wrap!important;gap:6px!important}
+  .item-actions{flex-direction:column!important;gap:5px!important}
+  .email-expand-pad{padding-left:18px!important}
+  .tema-side{flex-direction:row!important;flex-wrap:wrap!important}
+  .filter-row{flex-direction:column!important;align-items:flex-start!important}
+  .topbar-action{width:100%!important}
+  .topbar-row{flex-direction:column!important;align-items:flex-start!important;gap:8px!important}
+  .stats-grid{grid-template-columns:1fr 1fr!important}
+  .summary-alerts{flex-direction:column!important;align-items:flex-start!important}
+}
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+const {useState,useEffect,useCallback}=React;
+
+const B={
+  red:"#b05455",redL:"rgba(176,84,85,0.1)",
+  sage:"#becec5",sageDk:"#8fa99e",sageL:"rgba(190,206,197,0.22)",
+  bg:"#f7f6f4",white:"#fff",dark:"#2c2c2c",mid:"#6b6b6b",light:"#b8b8b8",
+  border:"rgba(190,206,197,0.7)",borderR:"rgba(176,84,85,0.18)",
+  amber:"#c4873a",amberL:"rgba(196,135,58,0.12)",
+  indigo:"#4a5568",indigoL:"rgba(74,85,104,0.1)"
+};
+const PRI={
+  alta: {label:"Alta", color:"#b05455",bg:"rgba(176,84,85,0.1)"},
+  media:{label:"Media",color:"#8fa99e",bg:"rgba(143,169,158,0.15)"},
+  baja: {label:"Baja", color:"#b8b8b8",bg:"rgba(184,184,184,0.12)"}
+};
+const ESTADOS={
+  en_espera: {label:"En espera", color:"#c4873a",bg:"rgba(196,135,58,0.12)"},
+  en_curso:  {label:"En curso",  color:"#1565c0",bg:"rgba(21,101,192,0.1)"},
+  autorizado:{label:"Autorizado",color:"#2e7d32",bg:"rgba(46,125,50,0.1)"},
+  rechazado: {label:"Rechazado", color:"#b05455",bg:"rgba(176,84,85,0.1)"},
+};
+const PROYECTOS=["Mercadona","Internacional","RRHH","Operaciones","Finanzas","Marketing","Dirección","Personal"];
+const PC={
+  "Mercadona":    {color:"#2e7d32",bg:"rgba(46,125,50,0.1)"},
+  "Internacional":{color:"#1565c0",bg:"rgba(21,101,192,0.1)"},
+  "RRHH":         {color:"#6a1b9a",bg:"rgba(106,27,154,0.1)"},
+  "Operaciones":  {color:"#c4873a",bg:"rgba(196,135,58,0.1)"},
+  "Finanzas":     {color:"#00695c",bg:"rgba(0,105,92,0.1)"},
+  "Marketing":    {color:"#ad1457",bg:"rgba(173,20,87,0.1)"},
+  "Dirección":    {color:"#4e342e",bg:"rgba(78,52,46,0.1)"},
+  "Personal":     {color:"#546e7a",bg:"rgba(84,110,122,0.1)"}
+};
+const DAYS=["Dom","Lun","Mar","Mié","Jue","Vie","Sáb"];
+const MONTHS=["enero","febrero","marzo","abril","mayo","junio","julio","agosto","septiembre","octubre","noviembre","diciembre"];
+
+const fmt=d=>new Date(d).toLocaleDateString("es-ES",{day:"2-digit",month:"short",year:"numeric"});
+const fmtShort=d=>new Date(d).toLocaleDateString("es-ES",{day:"2-digit",month:"short"});
+const fmtDay=d=>new Date(d).toLocaleDateString("es-ES",{weekday:"long",day:"numeric",month:"long"});
+const today=()=>new Date().toISOString().split("T")[0];
+const isPast=d=>d&&d<today();
+const isToday=d=>d===today();
+
+function getWeek(){
+  const now=new Date(),dow=now.getDay();
+  const mon=new Date(now);mon.setDate(now.getDate()-(dow===0?6:dow-1));
+  return Array.from({length:7},(_,i)=>{const d=new Date(mon);d.setDate(mon.getDate()+i);return d.toISOString().split("T")[0];});
+}
+
+const iSt={width:"100%",background:B.bg,border:`1px solid ${B.border}`,borderRadius:10,color:B.dark,fontSize:15,padding:"11px 14px",outline:"none",fontFamily:"Georgia,serif"};
+const lSt={display:"block",fontSize:10,color:B.sageDk,letterSpacing:"0.12em",textTransform:"uppercase",fontFamily:"system-ui,sans-serif",fontWeight:700,marginBottom:6};
+
+function Badge({p}){const c=PRI[p];return <span style={{fontSize:10,padding:"2px 7px",borderRadius:4,background:c.bg,color:c.color,fontFamily:"system-ui,sans-serif",fontWeight:700}}>{c.label.toUpperCase()}</span>;}
+function EstBadge({e}){const c=ESTADOS[e]||ESTADOS.en_espera;return <span style={{fontSize:10,padding:"2px 8px",borderRadius:4,background:c.bg,color:c.color,fontFamily:"system-ui,sans-serif",fontWeight:700}}>{c.label.toUpperCase()}</span>;}
+function ProjTag({name}){if(!name)return null;const c=PC[name]||{color:B.mid,bg:B.sageL};return <span style={{fontSize:10,padding:"2px 8px",borderRadius:10,background:c.bg,color:c.color,fontFamily:"system-ui,sans-serif",fontWeight:600,border:`1px solid ${c.color}30`,marginLeft:4}}>{name}</span>;}
+function Field({label,children}){return <div><label style={lSt}>{label}</label>{children}</div>;}
+
+function PriPicker({val,onChange}){
+  return <div className="pri-picker" style={{display:"flex",gap:8,alignItems:"center",flexWrap:"wrap"}}>
+    <span style={{...lSt,marginBottom:0}}>Prioridad:</span>
+    {["alta","media","baja"].map(p=>(
+      <button key={p} onClick={()=>onChange(p)} style={{padding:"7px 16px",borderRadius:8,border:`1.5px solid ${val===p?PRI[p].color:B.border}`,background:val===p?PRI[p].bg:"transparent",color:val===p?PRI[p].color:B.light,fontSize:13,fontFamily:"system-ui,sans-serif",fontWeight:val===p?700:400,textTransform:"capitalize"}}>{p}</button>
+    ))}
+  </div>;
+}
+
+function DailySummary({todos,emails,temas,scope,onNav}){
+  const h=new Date().getHours();
+  const greet=h<13?"Buenos días":h<20?"Buenas tardes":"Buenas noches";
+  const overdueT=todos.filter(t=>!t.completado&&t.scope===scope&&isPast(t.fecha));
+  const todayT=todos.filter(t=>!t.completado&&t.scope===scope&&t.fecha===today());
+  const urgentT=todos.filter(t=>!t.completado&&t.scope===scope&&t.prioridad==="alta");
+  const pendE=emails.filter(e=>!e.contestado&&e.scope===scope);
+  const urgentE=emails.filter(e=>!e.contestado&&e.scope===scope&&e.prioridad==="alta");
+  const pendTemas=temas.filter(t=>t.scope===scope&&t.estado==="en_espera").length;
+
+  return(
+    <div style={{background:B.white,borderRadius:14,padding:"18px 20px",marginBottom:18,border:`1px solid ${B.border}`,borderLeft:`5px solid ${B.red}`,boxShadow:"0 2px 10px rgba(176,84,85,0.07)",animation:"slideUp .3s ease"}}>
+      <div style={{fontSize:12,color:B.light,fontFamily:"system-ui,sans-serif",marginBottom:3}}>{fmtDay(new Date())}</div>
+      <div style={{fontSize:20,fontWeight:500,marginBottom:14}}>{greet}, <span style={{color:B.red}}>Álvaro</span></div>
+      <div className="daily-stats" style={{display:"flex",gap:20,flexWrap:"wrap",marginBottom:overdueT.length>0||urgentE.length>0||pendTemas>0?14:0}}>
+        {[
+          {icon:"✅",val:todayT.length,label:"hoy"},
+          {icon:"🔴",val:urgentT.length,label:"urgentes"},
+          {icon:"✉",val:pendE.length,label:"emails"},
+          {icon:"🕐",val:pendTemas,label:"en espera"},
+        ].map(s=>(
+          <div key={s.label} style={{display:"flex",alignItems:"center",gap:7}}>
+            <span style={{fontSize:18}}>{s.icon}</span>
+            <div><span className="daily-stat-val" style={{fontSize:22,fontWeight:"bold",color:B.red}}>{s.val}</span><span style={{fontSize:11,color:B.mid,fontFamily:"system-ui,sans-serif",marginLeft:3}}>{s.label}</span></div>
+          </div>
+        ))}
+      </div>
+      <div className="summary-alerts" style={{display:"flex",gap:8,flexWrap:"wrap"}}>
+        {overdueT.length>0&&<div style={{background:B.redL,border:`1px solid ${B.borderR}`,borderRadius:8,padding:"6px 12px",fontSize:12,color:B.red,fontFamily:"system-ui,sans-serif",fontWeight:600}}>⚠ {overdueT.length} TO DO{overdueT.length>1?"s":""} vencido{overdueT.length>1?"s":""}</div>}
+        {urgentE.length>0&&<div style={{background:B.amberL,border:"1px solid rgba(196,135,58,0.3)",borderRadius:8,padding:"6px 12px",fontSize:12,color:B.amber,fontFamily:"system-ui,sans-serif",fontWeight:600}}>✉ {urgentE.length} email urgente{urgentE.length>1?"s":""}</div>}
+        {pendTemas>0&&<div style={{background:B.indigoL,border:"1px solid rgba(74,85,104,0.25)",borderRadius:8,padding:"6px 12px",fontSize:12,color:B.indigo,fontFamily:"system-ui,sans-serif",fontWeight:600}}>🕐 {pendTemas} tema{pendTemas>1?"s":""} en espera</div>}
+      </div>
+    </div>
+  );
+}
+
+function WeekCalendar({todos,scope}){
+  const week=getWeek();const now=new Date();
+  return(
+    <div style={{background:B.white,borderRadius:14,padding:"16px",marginBottom:18,border:`1px solid ${B.border}`,boxShadow:"0 1px 6px rgba(0,0,0,0.04)"}}>
+      <div style={{fontSize:11,color:B.sageDk,letterSpacing:"0.1em",textTransform:"uppercase",fontFamily:"system-ui,sans-serif",fontWeight:700,marginBottom:12}}>
+        Semana · {MONTHS[now.getMonth()]}
+      </div>
+      <div className="week-grid" style={{display:"grid",gridTemplateColumns:"repeat(7,1fr)",gap:6}}>
+        {week.map(day=>{
+          const dayT=todos.filter(t=>t.scope===scope&&t.fecha===day&&!t.completado);
+          const isT=isToday(day);const d=new Date(day+"T12:00:00");
+          const isWE=d.getDay()===0||d.getDay()===6;
+          return(
+            <div key={day} className="week-cell" style={{borderRadius:10,padding:"8px 6px",minHeight:80,background:isT?B.red:isWE?B.sageL:B.bg,border:`1px solid ${isT?B.red:B.border}`}}>
+              <div className="week-cell-day" style={{fontSize:9,fontFamily:"system-ui,sans-serif",fontWeight:700,color:isT?"rgba(255,255,255,0.8)":B.light,textTransform:"uppercase",marginBottom:1}}>{DAYS[d.getDay()]}</div>
+              <div className="week-cell-num" style={{fontSize:18,fontWeight:"bold",color:isT?"#fff":isWE?B.sageDk:B.dark,marginBottom:4}}>{d.getDate()}</div>
+              {dayT.length>0&&<div className="week-task-chip" style={{fontSize:10,padding:"2px 4px",borderRadius:4,background:isT?"rgba(255,255,255,0.25)":B.redL,color:isT?"#fff":B.red,fontFamily:"system-ui,sans-serif",fontWeight:700}}>{dayT.length}</div>}
+              {dayT.length>0&&<div style={{display:"none"}} className="mob-dot"><div style={{width:6,height:6,borderRadius:"50%",background:isT?"rgba(255,255,255,0.7)":B.red,margin:"2px auto 0"}}></div></div>}
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+function FormBox({title,color,onSave,onCancel,children}){
+  const c=color||B.red;
+  return(
+    <div style={{background:B.white,borderTop:`3px solid ${c}`,borderRadius:14,padding:20,marginBottom:16,border:`1px solid rgba(0,0,0,0.08)`,boxShadow:`0 2px 16px rgba(0,0,0,0.07)`,animation:"slideUp .25s ease"}}>
+      <div style={{fontSize:15,color:c,marginBottom:16,fontWeight:600}}>{title}</div>
+      <div style={{display:"flex",flexDirection:"column",gap:14}}>{children}</div>
+    </div>
+  );
+}
+
+function SaveCancel({onSave,onCancel,color}){
+  const c=color||B.red;
+  return(
+    <div className="form-actions" style={{display:"flex",justifyContent:"flex-end",gap:10,marginTop:6}}>
+      <button onClick={onCancel} style={{padding:"11px 20px",borderRadius:10,border:`1px solid ${B.border}`,background:"transparent",color:B.mid,fontSize:14,fontFamily:"system-ui,sans-serif"}}>Cancelar</button>
+      <button onClick={onSave} style={{padding:"11px 26px",borderRadius:10,border:"none",background:c,color:"#fff",fontSize:14,fontFamily:"system-ui,sans-serif",fontWeight:700}}>Guardar</button>
+    </div>
+  );
+}
+
+function TodoItem({t,onCheck,onDelete}){
+  const ov=!t.completado&&isPast(t.fecha);
+  return(
+    <div style={{background:B.white,borderRadius:12,padding:"14px 16px",border:`1px solid ${ov?B.borderR:B.border}`,borderLeft:`4px solid ${t.completado?B.sageDk:ov?B.red:PRI[t.prioridad].color}`,display:"flex",gap:12,alignItems:"flex-start",opacity:t.completado?.55:1,boxShadow:"0 1px 4px rgba(0,0,0,0.04)"}}>
+      <div onClick={onCheck} style={{width:26,height:26,borderRadius:7,border:`2px solid ${t.completado?B.sageDk:PRI[t.prioridad].color}`,background:t.completado?B.sageDk:"transparent",cursor:"pointer",flexShrink:0,marginTop:1,display:"flex",alignItems:"center",justifyContent:"center",minWidth:26}}>
+        {t.completado&&<span style={{color:"#fff",fontSize:13,fontWeight:"bold"}}>✓</span>}
+      </div>
+      <div style={{flex:1,minWidth:0}}>
+        <div style={{display:"flex",gap:6,flexWrap:"wrap",alignItems:"center",marginBottom:5}}>
+          <span style={{fontSize:15,fontWeight:500,textDecoration:t.completado?"line-through":"none",wordBreak:"break-word"}}>{t.titulo}</span>
+          <Badge p={t.prioridad}/><ProjTag name={t.proyecto}/>
+          {ov&&<span style={{fontSize:10,padding:"2px 6px",borderRadius:4,background:B.redL,color:B.red,fontFamily:"system-ui,sans-serif",fontWeight:700}}>⚠ VENCIDO</span>}
+        </div>
+        {t.descripcion&&<p style={{margin:"0 0 5px",fontSize:13,color:B.mid,lineHeight:1.5,wordBreak:"break-word"}}>{t.descripcion}</p>}
+        <span style={{fontSize:11,color:ov?B.red:B.light,fontFamily:"system-ui,sans-serif",fontWeight:ov?600:400}}>
+          {t.fecha&&`${ov?"⚠ ":""}Límite: ${fmtShort(t.fecha+"T12:00:00")}  ·  `}Añadido {fmtShort(t.creadoEn)}
+        </span>
+      </div>
+      <button onClick={onDelete} style={{background:"none",border:"none",color:B.light,fontSize:22,padding:"0 2px",lineHeight:1,flexShrink:0,alignSelf:"flex-start"}}>×</button>
+    </div>
+  );
+}
+
+// ── Componente modal de búsqueda en Outlook ──
+function OutlookModal({email,onClose}){
+  const [step,setStep]=useState("idle"); // idle | searching | results | reading | error
+  const [results,setResults]=useState([]);
+  const [selected,setSelected]=useState(null);
+  const [body,setBody]=useState(null);
+  const [errMsg,setErrMsg]=useState("");
+
+  async function buscar(){
+    setStep("searching");setResults([]);setSelected(null);setBody(null);
+    try{
+      const r=await fetch("https://api.anthropic.com/v1/messages",{
+        method:"POST",headers:{"Content-Type":"application/json"},
+        body:JSON.stringify({
+          model:"claude-sonnet-4-20250514",max_tokens:1000,
+          system:`Busca emails en Outlook con las herramientas disponibles.
+Devuelve SOLO JSON sin markdown, con este formato exacto:
+{"results":[{"id":"...","subject":"...","sender":"...","receivedDateTime":"...","summary":"...","webLink":"...","uri":"..."}]}
+Si no hay resultados: {"results":[]}`,
+          messages:[{role:"user",content:`Busca emails con asunto relacionado con "${email.asunto}" o de remitente "${email.remitente}". Máximo 6 resultados.`}],
+          mcp_servers:[{type:"url",url:"https://microsoft365.mcp.claude.com/mcp",name:"microsoft365"}]
+        })
+      });
+      const d=await r.json();
+      const txt=d.content.filter(b=>b.type==="text").map(b=>b.text).join("");
+      const parsed=JSON.parse(txt.replace(/```json|```/g,"").trim());
+      setResults(parsed.results||[]);
+      setStep("results");
+    }catch(e){setErrMsg("No se pudo conectar con Outlook.");setStep("error");}
+  }
+
+  async function leer(res){
+    setSelected(res);setStep("reading");setBody(null);
+    try{
+      const r=await fetch("https://api.anthropic.com/v1/messages",{
+        method:"POST",headers:{"Content-Type":"application/json"},
+        body:JSON.stringify({
+          model:"claude-sonnet-4-20250514",max_tokens:1000,
+          system:`Lee el email con read_resource. Devuelve SOLO JSON sin markdown:
+{"body":"texto del email","from":"remitente","to":"destinatarios"}`,
+          messages:[{role:"user",content:`Lee el email URI: ${res.uri}`}],
+          mcp_servers:[{type:"url",url:"https://microsoft365.mcp.claude.com/mcp",name:"microsoft365"}]
+        })
+      });
+      const d=await r.json();
+      const txt=d.content.filter(b=>b.type==="text").map(b=>b.text).join("");
+      const parsed=JSON.parse(txt.replace(/```json|```/g,"").trim());
+      setBody(parsed);setStep("reading-done");
+    }catch(e){setBody({body:"No se pudo cargar el contenido.",from:res.sender});setStep("reading-done");}
+  }
+
+  const fmtDt=d=>new Date(d).toLocaleDateString("es-ES",{day:"2-digit",month:"short",year:"numeric",hour:"2-digit",minute:"2-digit"});
+
+  return(
+    <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.5)",zIndex:2000,display:"flex",alignItems:"center",justifyContent:"center",padding:16}} onClick={e=>{if(e.target===e.currentTarget)onClose();}}>
+      <div style={{background:B.white,borderRadius:16,width:"100%",maxWidth:660,maxHeight:"88vh",overflow:"hidden",display:"flex",flexDirection:"column",boxShadow:"0 24px 64px rgba(0,0,0,0.22)",animation:"slideUp .25s ease"}}>
+
+        {/* Header modal */}
+        <div style={{padding:"16px 20px",borderBottom:`1px solid ${B.border}`,display:"flex",justifyContent:"space-between",alignItems:"flex-start",flexShrink:0}}>
+          <div>
+            <div style={{fontSize:14,fontWeight:700,color:"#0078d4",display:"flex",alignItems:"center",gap:7,marginBottom:3}}>
+              <span style={{fontSize:18}}>📧</span> Buscar en Outlook
+            </div>
+            <div style={{fontSize:12,color:B.mid,fontFamily:"system-ui,sans-serif"}}>
+              <span style={{color:B.red,fontWeight:600}}>{email.remitente}</span> · {email.asunto}
+            </div>
+          </div>
+          <button onClick={onClose} style={{background:"none",border:"none",fontSize:24,color:B.light,lineHeight:1,padding:"0 2px"}}>×</button>
+        </div>
+
+        {/* Cuerpo modal */}
+        <div style={{flex:1,overflow:"auto",padding:20}}>
+
+          {step==="idle"&&(
+            <div style={{textAlign:"center",padding:"32px 20px"}}>
+              <div style={{fontSize:40,marginBottom:14}}>🔍</div>
+              <div style={{fontSize:14,color:B.mid,fontFamily:"system-ui,sans-serif",lineHeight:1.7,marginBottom:24}}>
+                Buscará en el Outlook de Álvaro los emails relacionados con este asunto y remitente.
+              </div>
+              <button onClick={buscar} style={{padding:"12px 30px",borderRadius:10,border:"none",background:"#0078d4",color:"#fff",fontSize:14,fontFamily:"system-ui,sans-serif",fontWeight:700}}>
+                Buscar en Outlook
+              </button>
+            </div>
+          )}
+
+          {step==="searching"&&(
+            <div style={{textAlign:"center",padding:"40px 0",color:B.mid,fontFamily:"system-ui,sans-serif"}}>
+              <div style={{fontSize:32,marginBottom:12,animation:"fs 1s infinite"}}>⏳</div>
+              Buscando en Outlook...
+            </div>
+          )}
+
+          {step==="error"&&(
+            <div style={{background:B.redL,border:`1px solid ${B.borderR}`,borderRadius:10,padding:"16px 18px"}}>
+              <div style={{fontSize:14,color:B.red,fontWeight:600,marginBottom:4}}>⚠ Error de conexión</div>
+              <div style={{fontSize:13,color:B.red,fontFamily:"system-ui,sans-serif"}}>{errMsg}</div>
+              <button onClick={()=>setStep("idle")} style={{marginTop:12,padding:"8px 16px",borderRadius:8,border:`1px solid ${B.borderR}`,background:"transparent",color:B.red,fontSize:12,fontFamily:"system-ui,sans-serif"}}>Reintentar</button>
+            </div>
+          )}
+
+          {step==="results"&&!selected&&(
+            <div>
+              <div style={{fontSize:11,color:B.sageDk,letterSpacing:"0.1em",textTransform:"uppercase",fontFamily:"system-ui,sans-serif",fontWeight:700,marginBottom:12}}>
+                {results.length===0?"Sin resultados":`${results.length} email${results.length>1?"s":""} encontrado${results.length>1?"s":""}`}
+              </div>
+              {results.length===0?(
+                <div style={{textAlign:"center",padding:"20px",color:B.light,fontFamily:"system-ui,sans-serif",fontSize:13}}>
+                  No se encontraron emails. <br/>
+                  <button onClick={()=>setStep("idle")} style={{marginTop:10,padding:"7px 16px",borderRadius:8,border:`1px solid ${B.border}`,background:"transparent",color:B.mid,fontSize:12,fontFamily:"system-ui,sans-serif",cursor:"pointer"}}>Nueva búsqueda</button>
+                </div>
+              ):(
+                <div style={{display:"flex",flexDirection:"column",gap:8}}>
+                  {results.map((r,i)=>(
+                    <div key={i} onClick={()=>leer(r)} style={{background:B.bg,borderRadius:10,padding:"13px 15px",border:`1px solid ${B.border}`,cursor:"pointer",transition:"border-color .15s"}}
+                      onMouseEnter={e=>e.currentTarget.style.borderColor="#0078d4"}
+                      onMouseLeave={e=>e.currentTarget.style.borderColor=`rgba(190,206,197,0.7)`}>
+                      <div style={{fontSize:14,fontWeight:500,marginBottom:4,color:B.dark}}>{r.subject}</div>
+                      <div style={{fontSize:12,color:"#0078d4",fontFamily:"system-ui,sans-serif",fontWeight:600,marginBottom:4}}>{r.sender}</div>
+                      {r.summary&&<div style={{fontSize:12,color:B.mid,fontFamily:"system-ui,sans-serif",marginBottom:5,lineHeight:1.5}}>{r.summary.slice(0,120)}{r.summary.length>120?"...":""}</div>}
+                      <div style={{fontSize:11,color:B.light,fontFamily:"system-ui,sans-serif"}}>{fmtDt(r.receivedDateTime)}</div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+
+          {(step==="reading"||step==="reading-done")&&selected&&(
+            <div>
+              <button onClick={()=>{setSelected(null);setBody(null);setStep("results");}} style={{background:"none",border:"none",color:"#0078d4",fontSize:13,fontFamily:"system-ui,sans-serif",fontWeight:600,cursor:"pointer",marginBottom:14,display:"flex",alignItems:"center",gap:5}}>
+                ← Volver a resultados
+              </button>
+              <div style={{background:B.bg,borderRadius:10,padding:"13px 15px",border:`1px solid ${B.border}`,marginBottom:14}}>
+                <div style={{fontSize:14,fontWeight:600,marginBottom:4}}>{selected.subject}</div>
+                <div style={{fontSize:12,color:"#0078d4",fontFamily:"system-ui,sans-serif",fontWeight:600,marginBottom:2}}>De: {selected.sender}</div>
+                <div style={{fontSize:11,color:B.light,fontFamily:"system-ui,sans-serif"}}>{fmtDt(selected.receivedDateTime)}</div>
+              </div>
+              {step==="reading"&&<div style={{textAlign:"center",padding:"20px",color:B.mid,fontFamily:"system-ui,sans-serif",fontSize:13}}>Cargando contenido...</div>}
+              {step==="reading-done"&&body&&(
+                <div style={{background:B.white,borderRadius:10,padding:"14px 16px",border:`1px solid ${B.border}`,marginBottom:16,maxHeight:260,overflow:"auto"}}>
+                  <div style={{fontSize:10,color:B.sageDk,letterSpacing:"0.1em",textTransform:"uppercase",fontFamily:"system-ui,sans-serif",fontWeight:700,marginBottom:8}}>Contenido del email</div>
+                  <div style={{fontSize:13,color:B.dark,lineHeight:1.8,whiteSpace:"pre-wrap",fontFamily:"system-ui,sans-serif"}}>{body.body}</div>
+                </div>
+              )}
+              {selected.webLink&&(
+                <a href={selected.webLink} target="_blank" rel="noopener noreferrer"
+                  style={{display:"flex",alignItems:"center",justifyContent:"center",gap:10,padding:"13px",borderRadius:10,background:"#0078d4",color:"#fff",fontSize:14,fontFamily:"system-ui,sans-serif",fontWeight:700,textDecoration:"none",marginBottom:8}}>
+                  📨 Abrir en Outlook para responder
+                </a>
+              )}
+              <div style={{fontSize:11,color:B.light,fontFamily:"system-ui,sans-serif",textAlign:"center"}}>
+                Se abre Outlook directamente en este email
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function App(){
+  const td=today();
+  const emptyT={titulo:"",descripcion:"",prioridad:"media",fecha:td,proyecto:""};
+  const emptyE={remitente:"",asunto:"",resumen:"",prioridad:"media",fechaRecibido:td,accion:"",respuestaSugerida:"",proyecto:""};
+  const emptyTema={titulo:"",descripcion:"",pendienteDe:"",proyecto:"",fechaSeguimiento:td,estado:"en_espera"};
+
+  const [tab,setTab]=useState("resumen");
+  const [scope,setScope]=useState("laboral");
+  const [notifPerm,setNotifPerm]=useState(typeof Notification!=="undefined"?Notification.permission:"default");
+  const [notifConfig,setNotifConfig]=useState(()=>{try{const s=localStorage.getItem("db-notif-config");return s?JSON.parse(s):{hora:"08:30",activo:true,todoVencido:true,todoHoy:true,emailUrgente:true,temaHoy:true,altaPrioridad:true};}catch{return{hora:"08:30",activo:true,todoVencido:true,todoHoy:true,emailUrgente:true,temaHoy:true,altaPrioridad:true};}});
+  const [todos,setTodos]=useState([]);
+  const [emails,setEmails]=useState([]);
+  const [temas,setTemas]=useState([]);
+  const [notes,setNotes]=useState("");
+  const [filter,setFilter]=useState("todas");
+  const [pf,setPf]=useState("todos");
+  const [showTF,setShowTF]=useState(false);
+  const [showEF,setShowEF]=useState(false);
+  const [showTemaF,setShowTemaF]=useState(false);
+  const [expanded,setExpanded]=useState(null);
+  const [outlookEmail,setOutlookEmail]=useState(null);
+  const [editTema,setEditTema]=useState(null);
+  const [toast,setToast]=useState(null);
+  const [tf,setTf]=useState(emptyT);
+  const [ef,setEf]=useState(emptyE);
+  const [temaF,setTemaF]=useState(emptyTema);
+
+  // ── Service Worker + Notificaciones ──
+  useEffect(()=>{
+    if("serviceWorker" in navigator){
+      navigator.serviceWorker.register("/sw.js").catch(()=>{});
+    }
+  },[]);
+
+  useEffect(()=>{
+    try{localStorage.setItem("db-notif-config",JSON.stringify(notifConfig));}catch{}
+    scheduleNotifications(notifConfig,todos,emails,temas,scope);
+  },[notifConfig,todos,emails,temas,scope]);
+
+  function scheduleNotifications(cfg,todos,emails,temas,scope){
+    if(!cfg.activo||typeof Notification==="undefined"||Notification.permission!=="granted")return;
+    // Programar con setTimeout hasta la hora configurada
+    const now=new Date();
+    const [hh,mm]=cfg.hora.split(":").map(Number);
+    const target=new Date(now);
+    target.setHours(hh,mm,0,0);
+    if(target<=now)target.setDate(target.getDate()+1);
+    const delay=target-now;
+    clearTimeout(window._notifTimer);
+    window._notifTimer=setTimeout(()=>fireNotifications(cfg,todos,emails,temas,scope),delay);
+  }
+
+  function fireNotifications(cfg,todos,emails,temas,scope){
+    const td=today();
+    const msgs=[];
+    if(cfg.todoVencido){const n=todos.filter(t=>!t.completado&&t.scope===scope&&t.fecha&&t.fecha<td).length;if(n>0)msgs.push(`⚠ ${n} TO DO${n>1?"s":""} vencido${n>1?"s":""}`);}
+    if(cfg.todoHoy){const n=todos.filter(t=>!t.completado&&t.scope===scope&&t.fecha===td).length;if(n>0)msgs.push(`📋 ${n} TO DO${n>1?"s":""} para hoy`);}
+    if(cfg.emailUrgente){const n=emails.filter(e=>!e.contestado&&e.scope===scope&&e.prioridad==="alta").length;if(n>0)msgs.push(`✉ ${n} email urgente${n>1?"s":""}`);}
+    if(cfg.temaHoy){const n=temas.filter(t=>t.scope===scope&&t.estado==="en_espera"&&t.fechaSeguimiento===td).length;if(n>0)msgs.push(`🕐 ${n} tema${n>1?"s":""} con seguimiento hoy`);}
+    if(cfg.altaPrioridad){const n=todos.filter(t=>!t.completado&&t.scope===scope&&t.prioridad==="alta").length+emails.filter(e=>!e.contestado&&e.scope===scope&&e.prioridad==="alta").length;if(n>0)msgs.push(`🔴 ${n} elemento${n>1?"s":""} de alta prioridad`);}
+    if(msgs.length>0){
+      new Notification("Delibreads · Panel CEO",{body:msgs.join("\n"),icon:"/icon.png",badge:"/icon.png",tag:"delibreads-daily"});
+    }
+    // Reprogramar para mañana
+    scheduleNotifications(cfg,todos,emails,temas,scope);
+  }
+
+  async function pedirPermiso(){
+    if(typeof Notification==="undefined")return;
+    const perm=await Notification.requestPermission();
+    setNotifPerm(perm);
+    if(perm==="granted")scheduleNotifications(notifConfig,todos,emails,temas,scope);
+  }
+  useEffect(()=>{
+    (async()=>{
+      try{
+        const [{data:t},{data:e},{data:tm},{data:n}]=await Promise.all([
+          sb.from("todos").select("*").order("creado_en",{ascending:false}),
+          sb.from("emails").select("*").order("creado_en",{ascending:false}),
+          sb.from("temas").select("*").order("creado_en",{ascending:false}),
+          sb.from("notas").select("*").eq("id","panel").single(),
+        ]);
+        if(t)setTodos(t.map(r=>({...r,creadoEn:r.creado_en,asignado:r.asignado||"AO"})));
+        if(e)setEmails(e.map(r=>({...r,creadoEn:r.creado_en,fechaRecibido:r.fecha_recibido,respuestaSugerida:r.respuesta_sugerida})));
+        if(tm)setTemas(tm.map(r=>({...r,creadoEn:r.creado_en,pendienteDe:r.pendiente_de,fechaSeguimiento:r.fecha_seguimiento})));
+        if(n)setNotes(n.contenido||"");
+      }catch(err){console.warn("Supabase:",err);}
+    })();
+  },[]);
+
+  // ── Helpers de guardado ──
+  const savT=async u=>{
+    setTodos(u);
+    // upsert cada elemento
+    for(const x of u){
+      await sb.from("todos").upsert({id:x.id,titulo:x.titulo,descripcion:x.descripcion,prioridad:x.prioridad,fecha:x.fecha,proyecto:x.proyecto,scope:x.scope,asignado:x.asignado||"AO",completado:x.completado,creado_en:x.creadoEn});
+    }
+    // borrar los que ya no están
+    const ids=u.map(x=>x.id);
+    const {data:all}=await sb.from("todos").select("id");
+    if(all){const toDelete=all.map(r=>r.id).filter(id=>!ids.includes(id));if(toDelete.length)await sb.from("todos").delete().in("id",toDelete);}
+  };
+  const savE=async u=>{
+    setEmails(u);
+    for(const x of u){
+      await sb.from("emails").upsert({id:x.id,remitente:x.remitente,asunto:x.asunto,resumen:x.resumen,accion:x.accion,respuesta_sugerida:x.respuestaSugerida,prioridad:x.prioridad,fecha_recibido:x.fechaRecibido,proyecto:x.proyecto,scope:x.scope,contestado:x.contestado,creado_en:x.creadoEn});
+    }
+    const ids=u.map(x=>x.id);
+    const {data:all}=await sb.from("emails").select("id");
+    if(all){const toDelete=all.map(r=>r.id).filter(id=>!ids.includes(id));if(toDelete.length)await sb.from("emails").delete().in("id",toDelete);}
+  };
+  const savN=async v=>{
+    setNotes(v);
+    await sb.from("notas").upsert({id:"panel",contenido:v});
+  };
+  const savTm=async u=>{
+    setTemas(u);
+    for(const x of u){
+      await sb.from("temas").upsert({id:x.id,titulo:x.titulo,descripcion:x.descripcion,pendiente_de:x.pendienteDe,proyecto:x.proyecto,fecha_seguimiento:x.fechaSeguimiento,estado:x.estado,scope:x.scope,creado_en:x.creadoEn});
+    }
+    const ids=u.map(x=>x.id);
+    const {data:all}=await sb.from("temas").select("id");
+    if(all){const toDelete=all.map(r=>r.id).filter(id=>!ids.includes(id));if(toDelete.length)await sb.from("temas").delete().in("id",toDelete);}
+  };
+  const toast_=m=>{setToast(m);setTimeout(()=>setToast(null),2400);};
+
+  const changeTab=t=>{setTab(t);setShowTF(false);setShowEF(false);setShowTemaF(false);setExpanded(null);};
+
+  const addTodo=()=>{
+    if(!tf.titulo.trim())return;
+    savT([{...tf,scope,id:Date.now(),completado:false,creadoEn:new Date().toISOString()},...todos]);
+    setTf(emptyT);setShowTF(false);toast_("✓ TO DO añadido");
+  };
+  const addEmail=()=>{
+    if(!ef.remitente.trim()||!ef.asunto.trim())return;
+    savE([{...ef,scope,id:Date.now(),contestado:false,creadoEn:new Date().toISOString()},...emails]);
+    setEf(emptyE);setShowEF(false);toast_("✓ Email registrado");
+  };
+  const addTema=()=>{
+    if(!temaF.titulo.trim())return;
+    if(editTema){
+      savTm(temas.map(t=>t.id===editTema?{...temaF,id:editTema,scope}:t));
+      setEditTema(null);toast_("✓ Tema actualizado");
+    }else{
+      savTm([{...temaF,scope,id:Date.now(),creadoEn:new Date().toISOString()},...temas]);
+      toast_("✓ Tema añadido");
+    }
+    setTemaF(emptyTema);setShowTemaF(false);
+  };
+
+  const applyFE=arr=>arr.filter(x=>x.scope===scope&&(filter==="todas"||x.prioridad===filter)&&(pf==="todos"||x.proyecto===pf));
+  const applyFT=(arr,asig)=>arr.filter(x=>x.asignado===asig&&(filter==="todas"||x.prioridad===filter)&&(pf==="todos"||x.proyecto===pf));
+  const fTao=applyFT(todos,"AO");
+  const fTsp=applyFT(todos,"SP");
+  const fE=applyFE(emails);
+  const fTemas=temas.filter(t=>t.scope===scope&&(pf==="todos"||t.proyecto===pf));
+  const pTao=todos.filter(t=>!t.completado&&t.asignado==="AO").length;
+  const pTsp=todos.filter(t=>!t.completado&&t.asignado==="SP").length;
+  const pE=emails.filter(e=>!e.contestado&&e.scope===scope).length;
+  const pTemas=temas.filter(t=>t.scope===scope&&t.estado==="en_espera").length;
+  const bL=emails.filter(e=>!e.contestado&&e.scope==="laboral").length+temas.filter(t=>t.scope==="laboral"&&t.estado==="en_espera").length;
+  const bP=emails.filter(e=>!e.contestado&&e.scope==="personal").length+temas.filter(t=>t.scope==="personal"&&t.estado==="en_espera").length;
+
+  const selSt={...iSt,padding:"10px 12px",fontSize:14};
+
+  const FilterBar=({showPri=true})=>(
+    <div className="filter-row" style={{display:"flex",gap:8,flexWrap:"wrap",alignItems:"center"}}>
+      {showPri&&["todas","alta","media","baja"].map(p=>(
+        <button key={p} onClick={()=>setFilter(p)} style={{padding:"6px 14px",borderRadius:20,border:"1px solid",borderColor:filter===p?B.red:B.border,background:filter===p?B.redL:"transparent",color:filter===p?B.red:B.mid,fontSize:12,fontFamily:"system-ui,sans-serif",fontWeight:filter===p?700:400,textTransform:"capitalize"}}>{p}</button>
+      ))}
+      <select value={pf} onChange={e=>setPf(e.target.value)} style={{background:B.bg,border:`1px solid ${B.border}`,borderRadius:8,color:B.dark,fontSize:12,padding:"6px 10px",outline:"none",fontFamily:"system-ui,sans-serif"}}>
+        <option value="todos">Todos los proyectos</option>
+        {PROYECTOS.map(p=><option key={p} value={p}>{p}</option>)}
+      </select>
+    </div>
+  );
+
+  const AddBtn=({label,active,onClick,color})=>(
+    <button onClick={onClick} style={{padding:"10px 20px",borderRadius:10,border:`1.5px solid ${color||B.red}`,background:active?(color||B.red):"transparent",color:active?"#fff":(color||B.red),fontSize:14,fontFamily:"system-ui,sans-serif",fontWeight:700,display:"flex",gap:8,alignItems:"center",whiteSpace:"nowrap"}}>
+      <span style={{fontSize:20,lineHeight:1}}>{active?"×":"+"}</span>{label}
+    </button>
+  );
+
+  return(
+    <div style={{minHeight:"100vh",background:B.bg,paddingBottom:2}}>
+
+      {/* TOAST */}
+      {toast&&<div style={{position:"fixed",top:16,left:"50%",transform:"translateX(-50%)",zIndex:9999,background:B.red,color:"#fff",padding:"10px 22px",borderRadius:10,fontSize:13,fontFamily:"system-ui,sans-serif",boxShadow:"0 4px 20px rgba(176,84,85,0.35)",animation:"fs .3s ease",whiteSpace:"nowrap"}}>{toast}</div>}
+
+      {/* HEADER */}
+      <header style={{background:B.white,borderBottom:`3px solid ${B.red}`,position:"sticky",top:0,zIndex:100,boxShadow:"0 2px 10px rgba(176,84,85,0.07)"}}>
+        <div className="header-inner" style={{maxWidth:1060,margin:"0 auto",padding:"0 22px",height:60,display:"flex",alignItems:"center",justifyContent:"space-between"}}>
+          <div style={{display:"flex",alignItems:"center",gap:12}}>
+            <div>
+              <div className="header-brand" style={{fontSize:20,fontWeight:"bold",color:B.red,letterSpacing:"-0.01em",lineHeight:1.1}}>Delibreads</div>
+              <div className="header-tagline" style={{fontSize:9,color:B.sageDk,letterSpacing:"0.2em",textTransform:"uppercase",fontFamily:"system-ui,sans-serif",fontWeight:700}}>· ROLLING TOGETHER ·</div>
+            </div>
+            <div className="header-sep" style={{width:1,height:28,background:B.border,margin:"0 8px"}}/>
+            <div>
+              <div className="header-name" style={{fontSize:13,fontWeight:500}}>Panel Álvaro Otero</div>
+              <div className="header-role" style={{fontSize:11,color:B.light,fontFamily:"system-ui,sans-serif"}}>CEO · Gestión diaria</div>
+            </div>
+          </div>
+          <div style={{display:"flex",gap:6}}>
+            {[["laboral",bL],["personal",bP]].map(([s,b])=>(
+              <button key={s} className="scope-btn" onClick={()=>setScope(s)} style={{position:"relative",padding:"8px 18px",borderRadius:8,border:"none",background:scope===s?B.red:"transparent",color:scope===s?"#fff":B.red,fontSize:13,fontFamily:"system-ui,sans-serif",fontWeight:700,outline:scope===s?"none":`1.5px solid ${B.borderR}`}}>
+                {s.charAt(0).toUpperCase()+s.slice(1)}
+                {b>0&&<span style={{position:"absolute",top:-6,right:-6,background:scope===s?B.sage:B.red,color:scope===s?B.dark:"#fff",borderRadius:"50%",width:17,height:17,fontSize:9,display:"flex",alignItems:"center",justifyContent:"center",fontWeight:"bold"}}>{b}</span>}
+              </button>
+            ))}
+          </div>
+        </div>
+      </header>
+
+      {/* TABS ESCRITORIO */}
+      <div className="desk-tabs" style={{maxWidth:1060,margin:"0 auto",padding:"0 22px",display:"flex",borderBottom:`2px solid ${B.border}`,marginBottom:0}}>
+        {[["resumen","Resumen",null],["todos-ao","TO DOs AO",pTao],["todos-sp","TO DOs SP",pTsp],["emails","Emails Pendientes",pE],["temas","Temas Pendientes",pTemas],["notas","Notas",null],["notif","🔔 Avisos",null]].map(([id,label,cnt])=>(
+          <button key={id} onClick={()=>changeTab(id)} style={{padding:"12px 22px",background:"none",border:"none",fontSize:14,fontFamily:"Georgia,serif",color:tab===id?B.red:B.mid,borderBottom:tab===id?`3px solid ${B.red}`:"3px solid transparent",marginBottom:-2,display:"flex",gap:7,alignItems:"center",whiteSpace:"nowrap"}}>
+            {label}
+            {cnt!==null&&cnt>0&&<span style={{background:id==="temas"?B.indigoL:B.redL,color:id==="temas"?B.indigo:B.red,borderRadius:10,padding:"1px 7px",fontSize:10,fontFamily:"system-ui,sans-serif",fontWeight:700}}>{cnt}</span>}
+          </button>
+        ))}
+      </div>
+
+      {/* CONTENIDO */}
+      <div className="main-pad" style={{maxWidth:1060,margin:"0 auto",padding:"22px 22px 32px"}}>
+
+        {/* ── RESUMEN ── */}
+        {tab==="resumen"&&(
+          <div>
+            <DailySummary todos={todos} emails={emails} temas={temas} scope={scope} onNav={changeTab}/>
+            <WeekCalendar todos={todos} scope={scope}/>
+            {(()=>{
+              const urgT=todos.filter(t=>!t.completado&&t.scope===scope&&t.prioridad==="alta");
+              const urgE=emails.filter(e=>!e.contestado&&e.scope===scope&&e.prioridad==="alta");
+              const espT=temas.filter(t=>t.scope===scope&&t.estado==="en_espera");
+              if(!urgT.length&&!urgE.length&&!espT.length) return <div style={{textAlign:"center",padding:"30px",color:B.light,fontFamily:"system-ui,sans-serif",fontSize:14}}>✓ Sin elementos urgentes pendientes</div>;
+              return <div>
+                <div style={{fontSize:11,color:B.sageDk,letterSpacing:"0.12em",textTransform:"uppercase",fontFamily:"system-ui,sans-serif",fontWeight:700,marginBottom:10}}>Requiere atención</div>
+                <div style={{display:"flex",flexDirection:"column",gap:8}}>
+                  {urgT.map(t=>(
+                    <div key={t.id} style={{background:B.white,borderRadius:12,padding:"13px 16px",border:`1px solid ${B.borderR}`,borderLeft:`4px solid ${B.red}`,display:"flex",gap:10,alignItems:"center"}}>
+                      <span>✅</span>
+                      <div style={{flex:1,minWidth:0}}>
+                        <div style={{fontSize:14,fontWeight:500,wordBreak:"break-word"}}>{t.titulo}</div>
+                        {t.fecha&&<div style={{fontSize:11,color:isPast(t.fecha)?B.red:B.light,fontFamily:"system-ui,sans-serif",marginTop:2}}>{isPast(t.fecha)?"⚠ ":""}{fmtShort(t.fecha+"T12:00:00")}</div>}
+                      </div>
+                      <button onClick={()=>changeTab("todos-ao")} style={{fontSize:11,color:B.red,background:"none",border:`1px solid ${B.borderR}`,borderRadius:6,padding:"4px 10px",fontFamily:"system-ui,sans-serif",flexShrink:0}}>Ver →</button>
+                    </div>
+                  ))}
+                  {urgE.map(e=>(
+                    <div key={e.id} style={{background:B.white,borderRadius:12,padding:"13px 16px",border:"1px solid rgba(196,135,58,0.2)",borderLeft:`4px solid ${B.amber}`,display:"flex",gap:10,alignItems:"center"}}>
+                      <span>✉</span>
+                      <div style={{flex:1,minWidth:0}}>
+                        <div style={{fontSize:12,fontFamily:"system-ui,sans-serif",fontWeight:700,color:B.red}}>{e.remitente}</div>
+                        <div style={{fontSize:14,wordBreak:"break-word"}}>{e.asunto}</div>
+                      </div>
+                      <button onClick={()=>changeTab("emails")} style={{fontSize:11,color:B.red,background:"none",border:`1px solid ${B.borderR}`,borderRadius:6,padding:"4px 10px",fontFamily:"system-ui,sans-serif",flexShrink:0}}>Ver →</button>
+                    </div>
+                  ))}
+                  {espT.map(t=>(
+                    <div key={t.id} style={{background:B.white,borderRadius:12,padding:"13px 16px",border:"1px solid rgba(74,85,104,0.2)",borderLeft:`4px solid ${B.indigo}`,display:"flex",gap:10,alignItems:"center"}}>
+                      <span>🕐</span>
+                      <div style={{flex:1,minWidth:0}}>
+                        <div style={{fontSize:14,fontWeight:500,wordBreak:"break-word"}}>{t.titulo}</div>
+                        {t.pendienteDe&&<div style={{fontSize:12,color:B.mid,fontFamily:"system-ui,sans-serif",marginTop:2}}>← {t.pendienteDe}</div>}
+                      </div>
+                      <button onClick={()=>changeTab("temas")} style={{fontSize:11,color:B.indigo,background:"none",border:"1px solid rgba(74,85,104,0.3)",borderRadius:6,padding:"4px 10px",fontFamily:"system-ui,sans-serif",flexShrink:0}}>Ver →</button>
+                    </div>
+                  ))}
+                </div>
+              </div>;
+            })()}
+          </div>
+        )}
+
+        {/* ── TO DOs ── */}
+        {/* ── TO DOs AO (Álvaro Otero) ── */}
+        {(tab==="todos-ao"||tab==="todos-sp")&&(()=>{
+          const isAO=tab==="todos-ao";
+          const asig=isAO?"AO":"SP";
+          const fT=isAO?fTao:fTsp;
+          const accentColor=isAO?B.red:"#4a5568";
+          const accentL=isAO?B.redL:"rgba(74,85,104,0.1)";
+          const desc=isAO?"TO DOs para que Álvaro los ejecute":"Tus propios TO DOs · Soraya Pau";
+          return(
+            <div>
+              <div style={{background:B.white,borderRadius:10,padding:"10px 16px",marginBottom:14,border:`1px solid ${B.border}`,borderLeft:`4px solid ${accentColor}`,fontSize:13,color:B.mid,fontFamily:"system-ui,sans-serif"}}>
+                {isAO?"✅":"👤"} <strong style={{color:B.dark}}>{isAO?"TO DOs · Álvaro Otero":"TO DOs · Soraya Pau"}</strong> — {desc}
+              </div>
+              <div className="topbar-row" style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:14,gap:10,flexWrap:"wrap"}}>
+                <FilterBar showPri={true}/>
+                <button onClick={()=>setShowTF(v=>!v)} style={{padding:"10px 20px",borderRadius:10,border:`1.5px solid ${accentColor}`,background:showTF?accentColor:"transparent",color:showTF?"#fff":accentColor,fontSize:14,fontFamily:"system-ui,sans-serif",fontWeight:700,display:"flex",gap:8,alignItems:"center",whiteSpace:"nowrap"}}>
+                  <span style={{fontSize:20,lineHeight:1}}>{showTF?"×":"+"}</span>{isAO?"Nuevo TO DO para AO":"Nuevo TO DO para mí"}
+                </button>
+              </div>
+              {showTF&&(
+                <div style={{background:B.white,borderTop:`3px solid ${accentColor}`,borderRadius:14,padding:20,marginBottom:16,border:`1px solid rgba(0,0,0,0.08)`,boxShadow:"0 2px 16px rgba(0,0,0,0.07)",animation:"slideUp .25s ease"}}>
+                  <div style={{fontSize:15,color:accentColor,marginBottom:16,fontWeight:600}}>
+                    {isAO?"Nuevo TO DO para Álvaro Otero":"Nuevo TO DO · Soraya Pau"}
+                  </div>
+                  <div style={{display:"flex",flexDirection:"column",gap:14}}>
+                    <Field label="Título *"><input value={tf.titulo} onChange={e=>setTf({...tf,titulo:e.target.value})} placeholder={isAO?"Tarea para que Álvaro ejecute...":"Mi tarea pendiente..."} style={iSt}/></Field>
+                    <div className="grid-2" style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12}}>
+                      <Field label="Fecha límite"><input type="date" value={tf.fecha} onChange={e=>setTf({...tf,fecha:e.target.value})} style={iSt}/></Field>
+                      <Field label="Proyecto"><select value={tf.proyecto} onChange={e=>setTf({...tf,proyecto:e.target.value})} style={selSt}><option value="">Sin proyecto</option>{PROYECTOS.map(p=><option key={p} value={p}>{p}</option>)}</select></Field>
+                    </div>
+                    <Field label={isAO?"Contexto / Instrucciones para Álvaro":"Notas / Contexto"}>
+                      <textarea value={tf.descripcion} onChange={e=>setTf({...tf,descripcion:e.target.value})} placeholder={isAO?"Detalles que Álvaro necesita para ejecutarlo...":"Contexto o detalles de esta tarea..."} rows={3} style={{...iSt,resize:"vertical"}}/>
+                    </Field>
+                    <div className="form-actions" style={{display:"flex",justifyContent:"space-between",alignItems:"center",gap:10}}>
+                      <PriPicker val={tf.prioridad} onChange={p=>setTf({...tf,prioridad:p})}/>
+                      <div style={{display:"flex",gap:10}}>
+                        <button onClick={()=>setShowTF(false)} style={{padding:"11px 18px",borderRadius:10,border:`1px solid ${B.border}`,background:"transparent",color:B.mid,fontSize:14,fontFamily:"system-ui,sans-serif"}}>Cancelar</button>
+                        <button onClick={()=>{
+                          if(!tf.titulo.trim())return;
+                          savT([{...tf,asignado:asig,scope:"laboral",id:Date.now(),completado:false,creadoEn:new Date().toISOString()},...todos]);
+                          setTf({titulo:"",descripcion:"",prioridad:"media",fecha:today(),proyecto:""});
+                          setShowTF(false);toast_("✓ TO DO añadido");
+                        }} style={{padding:"11px 24px",borderRadius:10,border:"none",background:accentColor,color:"#fff",fontSize:14,fontFamily:"system-ui,sans-serif",fontWeight:700}}>Guardar</button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+              {fT.length===0
+                ?<div style={{textAlign:"center",padding:"60px 20px",color:B.light,fontFamily:"system-ui,sans-serif"}}>Sin TO DOs con estos filtros</div>
+                :<div style={{display:"flex",flexDirection:"column",gap:10}}>
+                  {fT.map(t=>(
+                    <div key={t.id} style={{background:B.white,borderRadius:12,padding:"14px 16px",border:`1px solid ${!t.completado&&isPast(t.fecha)?B.borderR:B.border}`,borderLeft:`4px solid ${t.completado?B.sageDk:!t.completado&&isPast(t.fecha)?B.red:PRI[t.prioridad].color}`,display:"flex",gap:12,alignItems:"flex-start",opacity:t.completado?.55:1,boxShadow:"0 1px 4px rgba(0,0,0,0.04)"}}>
+                      <div onClick={()=>savT(todos.map(x=>x.id===t.id?{...x,completado:!x.completado}:x))} style={{width:26,height:26,borderRadius:7,border:`2px solid ${t.completado?B.sageDk:PRI[t.prioridad].color}`,background:t.completado?B.sageDk:"transparent",cursor:"pointer",flexShrink:0,marginTop:1,display:"flex",alignItems:"center",justifyContent:"center",minWidth:26}}>
+                        {t.completado&&<span style={{color:"#fff",fontSize:13,fontWeight:"bold"}}>✓</span>}
+                      </div>
+                      <div style={{flex:1,minWidth:0}}>
+                        <div style={{display:"flex",gap:6,flexWrap:"wrap",alignItems:"center",marginBottom:5}}>
+                          <span style={{fontSize:15,fontWeight:500,textDecoration:t.completado?"line-through":"none",wordBreak:"break-word"}}>{t.titulo}</span>
+                          <Badge p={t.prioridad}/><ProjTag name={t.proyecto}/>
+                          {!t.completado&&isPast(t.fecha)&&<span style={{fontSize:10,padding:"2px 6px",borderRadius:4,background:B.redL,color:B.red,fontFamily:"system-ui,sans-serif",fontWeight:700}}>⚠ VENCIDO</span>}
+                        </div>
+                        {t.descripcion&&<p style={{margin:"0 0 5px",fontSize:13,color:B.mid,lineHeight:1.5,wordBreak:"break-word"}}>{t.descripcion}</p>}
+                        <span style={{fontSize:11,color:!t.completado&&isPast(t.fecha)?B.red:B.light,fontFamily:"system-ui,sans-serif"}}>
+                          {t.fecha&&`${!t.completado&&isPast(t.fecha)?"⚠ ":""}Límite: ${fmtShort(t.fecha+"T12:00:00")}  ·  `}Añadido {fmtShort(t.creadoEn)}
+                        </span>
+                      </div>
+                      <button onClick={()=>{savT(todos.filter(x=>x.id!==t.id));toast_("TO DO eliminado");}} style={{background:"none",border:"none",color:B.light,fontSize:22,padding:"0 2px",lineHeight:1,flexShrink:0,alignSelf:"flex-start"}}>×</button>
+                    </div>
+                  ))}
+                </div>
+              }
+            </div>
+          );
+        })()}
+
+        {/* ── EMAILS ── */}
+        {tab==="emails"&&(
+          <div>
+            <div className="topbar-row" style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:14,gap:10,flexWrap:"wrap"}}>
+              <FilterBar showPri={true}/>
+              <AddBtn label="Registrar email" active={showEF} onClick={()=>setShowEF(v=>!v)}/>
+            </div>
+            {showEF&&(
+              <FormBox title={`Registrar email · ${scope}`} onSave={addEmail} onCancel={()=>setShowEF(false)}>
+                <div className="grid-2" style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12}}>
+                  <Field label="Remitente *"><input value={ef.remitente} onChange={e=>setEf({...ef,remitente:e.target.value})} placeholder="nombre@empresa.com" style={iSt}/></Field>
+                  <Field label="Fecha recibido"><input type="date" value={ef.fechaRecibido} onChange={e=>setEf({...ef,fechaRecibido:e.target.value})} style={iSt}/></Field>
+                </div>
+                <div className="grid-2" style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12}}>
+                  <Field label="Asunto *"><input value={ef.asunto} onChange={e=>setEf({...ef,asunto:e.target.value})} placeholder="Asunto del email..." style={iSt}/></Field>
+                  <Field label="Proyecto"><select value={ef.proyecto} onChange={e=>setEf({...ef,proyecto:e.target.value})} style={selSt}><option value="">Sin proyecto</option>{PROYECTOS.map(p=><option key={p} value={p}>{p}</option>)}</select></Field>
+                </div>
+                <div className="grid-2" style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12}}>
+                  <Field label="Resumen / Contexto"><textarea value={ef.resumen} onChange={e=>setEf({...ef,resumen:e.target.value})} placeholder="Breve descripción..." rows={3} style={{...iSt,resize:"vertical"}}/></Field>
+                  <Field label="Acción requerida de Álvaro"><textarea value={ef.accion} onChange={e=>setEf({...ef,accion:e.target.value})} placeholder="¿Qué debe hacer Álvaro?" rows={3} style={{...iSt,resize:"vertical"}}/></Field>
+                </div>
+                <Field label="✏ Borrador de respuesta sugerida"><textarea value={ef.respuestaSugerida} onChange={e=>setEf({...ef,respuestaSugerida:e.target.value})} placeholder="Escribe un borrador que Álvaro pueda revisar y enviar..." rows={4} style={{...iSt,resize:"vertical",borderColor:"rgba(190,206,197,0.9)",background:"rgba(190,206,197,0.07)"}}/></Field>
+                <div className="form-actions" style={{display:"flex",justifyContent:"space-between",alignItems:"center",gap:10}}>
+                  <PriPicker val={ef.prioridad} onChange={p=>setEf({...ef,prioridad:p})}/>
+                  <div style={{display:"flex",gap:10}}>
+                    <button onClick={()=>setShowEF(false)} style={{padding:"11px 18px",borderRadius:10,border:`1px solid ${B.border}`,background:"transparent",color:B.mid,fontSize:14,fontFamily:"system-ui,sans-serif"}}>Cancelar</button>
+                    <button onClick={addEmail} style={{padding:"11px 24px",borderRadius:10,border:"none",background:B.red,color:"#fff",fontSize:14,fontFamily:"system-ui,sans-serif",fontWeight:700}}>Guardar</button>
+                  </div>
+                </div>
+              </FormBox>
+            )}
+            {fE.length===0
+              ?<div style={{textAlign:"center",padding:"60px 20px",color:B.light,fontFamily:"system-ui,sans-serif"}}>Sin emails con estos filtros</div>
+              :<div style={{display:"flex",flexDirection:"column",gap:10}}>
+                {fE.map(e=>(
+                  <div key={e.id} style={{background:B.white,borderRadius:12,border:`1px solid ${B.border}`,borderLeft:`4px solid ${e.contestado?B.sageDk:PRI[e.prioridad].color}`,opacity:e.contestado?.55:1,overflow:"hidden"}}>
+                    <div style={{padding:"14px 16px",display:"flex",gap:12,alignItems:"flex-start",cursor:"pointer"}} onClick={()=>setExpanded(expanded===e.id?null:e.id)}>
+                      <div style={{width:36,height:36,borderRadius:"50%",flexShrink:0,background:e.contestado?B.sageL:B.redL,border:`2px solid ${e.contestado?B.sageDk:B.red}`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:15,color:e.contestado?B.sageDk:B.red,minWidth:36}}>✉</div>
+                      <div style={{flex:1,minWidth:0}}>
+                        <div style={{display:"flex",gap:6,flexWrap:"wrap",alignItems:"center",marginBottom:3}}>
+                          <span style={{fontSize:12,fontFamily:"system-ui,sans-serif",fontWeight:700,color:B.red}}>{e.remitente}</span>
+                          <Badge p={e.prioridad}/><ProjTag name={e.proyecto}/>
+                          {e.contestado&&<span style={{fontSize:10,padding:"2px 6px",borderRadius:4,background:B.sageL,color:B.sageDk,fontFamily:"system-ui,sans-serif",fontWeight:700}}>✓ LISTO</span>}
+                          {e.respuestaSugerida&&!e.contestado&&<span style={{fontSize:10,padding:"2px 6px",borderRadius:4,background:"rgba(190,206,197,0.3)",color:B.sageDk,fontFamily:"system-ui,sans-serif",fontWeight:600}}>✏ Borrador</span>}
+                        </div>
+                        <div style={{fontSize:14,fontWeight:500,marginBottom:3,wordBreak:"break-word"}}>{e.asunto}</div>
+                        <span style={{fontSize:11,color:B.light,fontFamily:"system-ui,sans-serif"}}>{fmtShort(e.fechaRecibido+"T12:00:00")} · {expanded===e.id?"▲ cerrar":"▼ detalle"}</span>
+                      </div>
+                      <div style={{display:"flex",flexDirection:"column",gap:6,flexShrink:0}} onClick={ev=>ev.stopPropagation()}>
+                        <button onClick={()=>savE(emails.map(x=>x.id===e.id?{...x,contestado:!x.contestado}:x))} style={{padding:"6px 12px",borderRadius:8,fontSize:12,fontFamily:"system-ui,sans-serif",fontWeight:700,border:`1.5px solid ${e.contestado?B.sageDk:B.red}`,background:e.contestado?B.sageL:B.redL,color:e.contestado?B.sageDk:B.red,whiteSpace:"nowrap"}}>{e.contestado?"✓ Listo":"Marcar"}</button>
+                        <button onClick={ev=>{ev.stopPropagation();setOutlookEmail(e);}} style={{padding:"6px 12px",borderRadius:8,fontSize:12,fontFamily:"system-ui,sans-serif",fontWeight:700,border:"1.5px solid #0078d4",background:"rgba(0,120,212,0.08)",color:"#0078d4",whiteSpace:"nowrap"}}>📧 Outlook</button>
+                        <button onClick={()=>{savE(emails.filter(x=>x.id!==e.id));toast_("Email eliminado");}} style={{background:"none",border:"none",color:B.light,fontSize:20,lineHeight:1,textAlign:"center"}}>×</button>
+                      </div>
+                    </div>
+                    {expanded===e.id&&(
+                      <div className="email-expand-pad" style={{padding:"14px 16px 16px 64px",borderTop:`1px solid ${B.border}`}}>
+                        {e.resumen&&<div style={{marginBottom:12}}><div style={lSt}>Resumen</div><p style={{margin:0,fontSize:13,color:B.mid,lineHeight:1.6}}>{e.resumen}</p></div>}
+                        {e.accion&&<div style={{background:B.redL,borderRadius:10,padding:"10px 14px",borderLeft:`3px solid ${B.red}`,marginBottom:12}}><div style={{...lSt,color:B.red}}>Acción requerida</div><p style={{margin:0,fontSize:13,color:B.red,lineHeight:1.5,fontWeight:600}}>{e.accion}</p></div>}
+                        {e.respuestaSugerida&&(
+                          <div style={{background:"rgba(190,206,197,0.12)",borderRadius:10,padding:"12px 14px",border:`1px solid ${B.border}`,borderLeft:`3px solid ${B.sageDk}`}}>
+                            <div style={{...lSt,color:B.sageDk}}>✏ Borrador sugerido</div>
+                            <p style={{margin:"0 0 10px",fontSize:13,color:B.dark,lineHeight:1.7,whiteSpace:"pre-wrap"}}>{e.respuestaSugerida}</p>
+                            <button onClick={()=>{navigator.clipboard?.writeText(e.respuestaSugerida);toast_("📋 Copiado");}} style={{fontSize:12,color:B.sageDk,background:"none",border:`1px solid ${B.border}`,borderRadius:7,padding:"6px 14px",fontFamily:"system-ui,sans-serif",fontWeight:600}}>📋 Copiar borrador</button>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            }
+          </div>
+        )}
+
+        {/* ── TEMAS PENDIENTES ── */}
+        {tab==="temas"&&(
+          <div>
+            <div style={{background:B.white,borderRadius:10,padding:"12px 16px",marginBottom:14,border:`1px solid ${B.border}`,borderLeft:`4px solid ${B.indigo}`,fontSize:13,color:B.mid,fontFamily:"system-ui,sans-serif",lineHeight:1.6}}>
+              📋 Gestiones <strong style={{color:B.dark}}>tuyas</strong> que esperan respuesta, autorización o decisión de Álvaro u otras personas.
+            </div>
+            <div className="topbar-row" style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:14,gap:10,flexWrap:"wrap"}}>
+              <FilterBar showPri={false}/>
+              <AddBtn label="Nuevo tema" active={showTemaF} onClick={()=>{setShowTemaF(v=>!v);setEditTema(null);setTemaF(emptyTema);}} color={B.indigo}/>
+            </div>
+            {showTemaF&&(
+              <FormBox title={editTema?"Editar tema":"Nuevo tema pendiente"} color={B.indigo} onSave={addTema} onCancel={()=>{setShowTemaF(false);setEditTema(null);}}>
+                <div className="grid-2" style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12}}>
+                  <Field label="Título *"><input value={temaF.titulo} onChange={e=>setTemaF({...temaF,titulo:e.target.value})} placeholder="¿Qué gestión estás esperando?" style={iSt}/></Field>
+                  <Field label="Pendiente de"><input value={temaF.pendienteDe} onChange={e=>setTemaF({...temaF,pendienteDe:e.target.value})} placeholder="Álvaro, RRHH, Proveedor..." style={iSt}/></Field>
+                </div>
+                <Field label="Descripción / Contexto"><textarea value={temaF.descripcion} onChange={e=>setTemaF({...temaF,descripcion:e.target.value})} placeholder="¿Qué iniciaste? ¿Qué necesitas que respondan?" rows={3} style={{...iSt,resize:"vertical"}}/></Field>
+                <div className="grid-3" style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:12}}>
+                  <Field label="Fecha seguimiento"><input type="date" value={temaF.fechaSeguimiento} onChange={e=>setTemaF({...temaF,fechaSeguimiento:e.target.value})} style={iSt}/></Field>
+                  <Field label="Proyecto"><select value={temaF.proyecto} onChange={e=>setTemaF({...temaF,proyecto:e.target.value})} style={selSt}><option value="">Sin proyecto</option>{PROYECTOS.map(p=><option key={p} value={p}>{p}</option>)}</select></Field>
+                  <Field label="Estado"><select value={temaF.estado} onChange={e=>setTemaF({...temaF,estado:e.target.value})} style={selSt}>{Object.entries(ESTADOS).map(([k,v])=><option key={k} value={k}>{v.label}</option>)}</select></Field>
+                </div>
+                <div style={{display:"flex",justifyContent:"flex-end",gap:10}}>
+                  <button onClick={()=>{setShowTemaF(false);setEditTema(null);}} style={{padding:"11px 18px",borderRadius:10,border:`1px solid ${B.border}`,background:"transparent",color:B.mid,fontSize:14,fontFamily:"system-ui,sans-serif"}}>Cancelar</button>
+                  <button onClick={addTema} style={{padding:"11px 24px",borderRadius:10,border:"none",background:B.indigo,color:"#fff",fontSize:14,fontFamily:"system-ui,sans-serif",fontWeight:700}}>Guardar</button>
+                </div>
+              </FormBox>
+            )}
+            {fTemas.length===0
+              ?<div style={{textAlign:"center",padding:"60px 20px",color:B.light,fontFamily:"system-ui,sans-serif"}}>Sin temas pendientes registrados</div>
+              :<div style={{display:"flex",flexDirection:"column",gap:10}}>
+                {fTemas.map(t=>{
+                  const resuelto=t.estado==="autorizado"||t.estado==="rechazado";
+                  const est=ESTADOS[t.estado]||ESTADOS.en_espera;
+                  return(
+                    <div key={t.id} style={{background:B.white,borderRadius:12,border:`1px solid ${resuelto?B.border:"rgba(74,85,104,0.2)"}`,borderLeft:`4px solid ${est.color}`,opacity:resuelto?.6:1,padding:"14px 16px",display:"flex",gap:12,alignItems:"flex-start"}}>
+                      <div style={{width:34,height:34,borderRadius:"50%",flexShrink:0,background:est.bg,border:`2px solid ${est.color}`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:14,minWidth:34}}>🕐</div>
+                      <div style={{flex:1,minWidth:0}}>
+                        <div style={{display:"flex",gap:6,flexWrap:"wrap",alignItems:"center",marginBottom:5}}>
+                          <span style={{fontSize:15,fontWeight:500,wordBreak:"break-word"}}>{t.titulo}</span>
+                          <EstBadge e={t.estado}/><ProjTag name={t.proyecto}/>
+                        </div>
+                        {t.pendienteDe&&<div style={{fontSize:12,color:B.mid,fontFamily:"system-ui,sans-serif",marginBottom:4}}>← <strong>{t.pendienteDe}</strong></div>}
+                        {t.descripcion&&<p style={{margin:"0 0 6px",fontSize:13,color:B.mid,lineHeight:1.5,wordBreak:"break-word"}}>{t.descripcion}</p>}
+                        <div style={{fontSize:11,color:B.light,fontFamily:"system-ui,sans-serif"}}>
+                          {t.fechaSeguimiento&&`Seguimiento: ${fmtShort(t.fechaSeguimiento+"T12:00:00")}  ·  `}Creado {fmtShort(t.creadoEn)}
+                        </div>
+                      </div>
+                      <div className="tema-side" style={{display:"flex",flexDirection:"column",gap:6,flexShrink:0,alignItems:"flex-end"}}>
+                        <select value={t.estado} onChange={ev=>savTm(temas.map(x=>x.id===t.id?{...x,estado:ev.target.value}:x))} style={{background:est.bg,border:`1px solid ${est.color}40`,borderRadius:7,color:est.color,fontSize:11,padding:"5px 8px",outline:"none",fontFamily:"system-ui,sans-serif",fontWeight:700}}>
+                          {Object.entries(ESTADOS).map(([k,v])=><option key={k} value={k}>{v.label}</option>)}
+                        </select>
+                        <div style={{display:"flex",gap:6}}>
+                          <button onClick={()=>{setShowTemaF(true);setEditTema(t.id);setTemaF({titulo:t.titulo,descripcion:t.descripcion||"",pendienteDe:t.pendienteDe||"",proyecto:t.proyecto||"",fechaSeguimiento:t.fechaSeguimiento||td,estado:t.estado});}} style={{fontSize:11,color:B.indigo,background:"none",border:"1px solid rgba(74,85,104,0.3)",borderRadius:6,padding:"4px 10px",fontFamily:"system-ui,sans-serif"}}>✏</button>
+                          <button onClick={()=>{savTm(temas.filter(x=>x.id!==t.id));toast_("Tema eliminado");}} style={{background:"none",border:"none",color:B.light,fontSize:20,lineHeight:1,padding:"0 2px"}}>×</button>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            }
+          </div>
+        )}
+
+        {/* ── NOTAS ── */}
+        {tab==="notas"&&(
+          <div>
+            <div style={{fontSize:12,color:B.mid,fontFamily:"system-ui,sans-serif",marginBottom:10}}>Notas · {scope} · Se guardan automáticamente</div>
+            <textarea value={notes} onChange={e=>savN(e.target.value)}
+              placeholder={"Escribe aquí notas y recordatorios...\n\nEjemplos:\n· Llamar a María antes de la reunión del lunes\n· Revisar propuesta de inversión\n· Confirmar viaje a Barcelona"}
+              style={{width:"100%",minHeight:380,background:B.white,border:`1px solid ${B.border}`,borderLeft:`4px solid ${B.sage}`,borderRadius:12,color:B.dark,fontSize:15,lineHeight:1.9,padding:18,resize:"vertical",outline:"none",fontFamily:"Georgia,serif"}}/>
+          </div>
+        )}
+
+        {/* ── NOTIFICACIONES ── */}
+        {tab==="notif"&&(
+          <div>
+            <div style={{background:B.white,borderRadius:14,padding:"20px 22px",marginBottom:16,border:`1px solid ${B.border}`,borderLeft:`5px solid ${B.amber}`,boxShadow:"0 2px 10px rgba(196,135,58,0.07)"}}>
+              <div style={{fontSize:16,fontWeight:600,marginBottom:6}}>🔔 Notificaciones diarias</div>
+              <div style={{fontSize:13,color:B.mid,fontFamily:"system-ui,sans-serif",lineHeight:1.6,marginBottom:18}}>
+                Álvaro recibirá un aviso en su móvil a la hora que elijas con un resumen de lo que tiene pendiente. Para que funcione, debe abrir el panel desde Safari y pulsar <strong>"Añadir a pantalla de inicio"</strong>.
+              </div>
+
+              {/* Estado del permiso */}
+              {notifPerm==="default"&&(
+                <div style={{background:B.amberL,border:"1px solid rgba(196,135,58,0.3)",borderRadius:10,padding:"14px 18px",marginBottom:18,display:"flex",gap:14,alignItems:"center",flexWrap:"wrap"}}>
+                  <div style={{flex:1}}>
+                    <div style={{fontSize:14,fontWeight:600,color:B.amber,marginBottom:3}}>Permiso de notificaciones no activado</div>
+                    <div style={{fontSize:12,color:B.mid,fontFamily:"system-ui,sans-serif"}}>Pulsa el botón para que el navegador pida permiso a Álvaro.</div>
+                  </div>
+                  <button onClick={pedirPermiso} style={{padding:"10px 20px",borderRadius:10,border:"none",background:B.amber,color:"#fff",fontSize:13,fontFamily:"system-ui,sans-serif",fontWeight:700,whiteSpace:"nowrap"}}>Activar notificaciones</button>
+                </div>
+              )}
+              {notifPerm==="granted"&&(
+                <div style={{background:"rgba(46,125,50,0.08)",border:"1px solid rgba(46,125,50,0.25)",borderRadius:10,padding:"12px 18px",marginBottom:18,fontSize:13,color:"#2e7d32",fontFamily:"system-ui,sans-serif",fontWeight:600}}>
+                  ✓ Notificaciones activadas en este dispositivo
+                </div>
+              )}
+              {notifPerm==="denied"&&(
+                <div style={{background:B.redL,border:`1px solid ${B.borderR}`,borderRadius:10,padding:"12px 18px",marginBottom:18,fontSize:13,color:B.red,fontFamily:"system-ui,sans-serif"}}>
+                  ⚠ Notificaciones bloqueadas. Ve a Ajustes del iPhone → Safari → Notificaciones y actívalas para este sitio.
+                </div>
+              )}
+
+              {/* Hora */}
+              <div style={{marginBottom:20}}>
+                <label style={lSt}>Hora del aviso diario</label>
+                <div style={{display:"flex",alignItems:"center",gap:12}}>
+                  <input type="time" value={notifConfig.hora} onChange={e=>setNotifConfig({...notifConfig,hora:e.target.value})} style={{...iSt,width:"auto",fontSize:22,fontWeight:"bold",color:B.red,textAlign:"center",padding:"10px 16px",letterSpacing:"0.05em"}}/>
+                  <span style={{fontSize:13,color:B.mid,fontFamily:"system-ui,sans-serif"}}>todos los días</span>
+                </div>
+              </div>
+
+              {/* Toggle general */}
+              <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:20,padding:"14px 16px",background:B.bg,borderRadius:10}}>
+                <div>
+                  <div style={{fontSize:14,fontWeight:500}}>Notificaciones activas</div>
+                  <div style={{fontSize:12,color:B.light,fontFamily:"system-ui,sans-serif"}}>Activar o pausar todos los avisos</div>
+                </div>
+                <button onClick={()=>setNotifConfig({...notifConfig,activo:!notifConfig.activo})} style={{width:48,height:28,borderRadius:14,border:"none",background:notifConfig.activo?B.red:B.light,position:"relative",transition:"all .2s",flexShrink:0}}>
+                  <div style={{position:"absolute",top:3,left:notifConfig.activo?22:3,width:22,height:22,borderRadius:"50%",background:"#fff",transition:"all .2s",boxShadow:"0 1px 4px rgba(0,0,0,0.2)"}}/>
+                </button>
+              </div>
+
+              {/* Qué notificar */}
+              <div style={{fontSize:11,color:B.sageDk,letterSpacing:"0.12em",textTransform:"uppercase",fontFamily:"system-ui,sans-serif",fontWeight:700,marginBottom:12}}>Qué incluir en el aviso</div>
+              <div style={{display:"flex",flexDirection:"column",gap:10}}>
+                {[
+                  {key:"todoVencido",icon:"⚠",label:"TO DOs vencidos",sub:"Tareas cuya fecha límite ya pasó"},
+                  {key:"todoHoy",   icon:"📋",label:"TO DOs para hoy",sub:"Tareas con fecha límite hoy"},
+                  {key:"emailUrgente",icon:"✉",label:"Emails urgentes sin contestar",sub:"Emails de prioridad alta pendientes"},
+                  {key:"temaHoy",  icon:"🕐",label:"Temas con seguimiento hoy",sub:"Temas pendientes con fecha de seguimiento hoy"},
+                  {key:"altaPrioridad",icon:"🔴",label:"Elementos de alta prioridad",sub:"Cualquier TO DO o email marcado como urgente"},
+                ].map(({key,icon,label,sub})=>(
+                  <div key={key} style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"12px 14px",background:B.bg,borderRadius:10,gap:12}}>
+                    <div style={{display:"flex",gap:10,alignItems:"center",flex:1}}>
+                      <span style={{fontSize:18}}>{icon}</span>
+                      <div>
+                        <div style={{fontSize:13,fontWeight:500}}>{label}</div>
+                        <div style={{fontSize:11,color:B.light,fontFamily:"system-ui,sans-serif"}}>{sub}</div>
+                      </div>
+                    </div>
+                    <button onClick={()=>setNotifConfig({...notifConfig,[key]:!notifConfig[key]})} style={{width:44,height:26,borderRadius:13,border:"none",background:notifConfig[key]?B.red:B.light,position:"relative",transition:"all .2s",flexShrink:0}}>
+                      <div style={{position:"absolute",top:3,left:notifConfig[key]?20:3,width:20,height:20,borderRadius:"50%",background:"#fff",transition:"all .2s",boxShadow:"0 1px 3px rgba(0,0,0,0.2)"}}/>
+                    </button>
+                  </div>
+                ))}
+              </div>
+
+              {/* Botón probar */}
+              <div style={{marginTop:20,paddingTop:16,borderTop:`1px solid ${B.border}`}}>
+                <button onClick={()=>{
+                  if(notifPerm==="granted"){
+                    new Notification("Delibreads · Prueba",{body:"✓ Las notificaciones funcionan correctamente.",icon:"/icon.png",tag:"test"});
+                    toast_("✓ Notificación de prueba enviada");
+                  } else {
+                    pedirPermiso();
+                  }
+                }} style={{padding:"10px 22px",borderRadius:10,border:`1.5px solid ${B.amber}`,background:"transparent",color:B.amber,fontSize:13,fontFamily:"system-ui,sans-serif",fontWeight:700}}>
+                  🔔 Enviar notificación de prueba
+                </button>
+                <div style={{fontSize:11,color:B.light,fontFamily:"system-ui,sans-serif",marginTop:8}}>
+                  La configuración se guarda automáticamente en este dispositivo.
+                </div>
+              </div>
+            </div>
+          </div>
+        )}paddingTop:16,borderTop:`1px solid ${B.border}`,display:"flex",justifyContent:"space-between",alignItems:"center",flexWrap:"wrap",gap:6}}>
+          <span style={{fontSize:11,color:B.light,fontFamily:"system-ui,sans-serif"}}>Panel CEO · Álvaro Otero · Delibreads</span>
+          <span style={{fontSize:11,color:B.light,fontFamily:"system-ui,sans-serif"}}>{new Date().toLocaleDateString("es-ES",{day:"numeric",month:"long",year:"numeric"})}</span>
+        </footer>
+      </div>
+
+      {/* MODAL OUTLOOK */}
+      {outlookEmail&&<OutlookModal email={outlookEmail} onClose={()=>setOutlookEmail(null)}/>}
+
+      {/* NAV MÓVIL INFERIOR */}
+      <nav className="mob-nav">
+        {[
+          {id:"resumen",icon:"🏠",label:"Inicio",cnt:0},
+          {id:"todos-ao",icon:"✅",label:"AO",cnt:pTao},{id:"todos-sp",icon:"👤",label:"SP",cnt:pTsp},
+          {id:"emails", icon:"✉", label:"Emails", cnt:pE},
+          {id:"temas",  icon:"🕐",label:"Temas",  cnt:pTemas},
+          {id:"notas",  icon:"📝",label:"Notas",  cnt:0},
+          {id:"notif",  icon:"🔔",label:"Avisos", cnt:0},
+        ].map(n=>(
+          <button key={n.id} className={tab===n.id?"active":""} onClick={()=>changeTab(n.id)}>
+            {n.cnt>0&&<span className="nav-badge">{n.cnt>9?"9+":n.cnt}</span>}
+            <span className="nav-icon">{n.icon}</span>
+            {n.label}
+          </button>
+        ))}
+      </nav>
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById("root")).render(<App/>);
+</script>
+</body>
+</html>
